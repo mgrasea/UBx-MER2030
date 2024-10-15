@@ -1,0 +1,3 @@
+"0","hist(setosadata$Lpetal,breaks=5,axes=FALSE,main=""petal "
+"0","length"",col=""grey""); axis(1,col.axis=""grey"") "
+"0",""

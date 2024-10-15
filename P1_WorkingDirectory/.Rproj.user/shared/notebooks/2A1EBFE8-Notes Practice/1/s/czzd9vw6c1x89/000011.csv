@@ -1,0 +1,5 @@
+"0",""
+"0","#bind() - combine 2 or more tables by columns"
+"0","irisdata[species==""setosa"",c(1,2)]->sepal "
+"0","irisdata[species==""setosa"",c(3,4)]->petal "
+"0","cbind(sepal,petal) "

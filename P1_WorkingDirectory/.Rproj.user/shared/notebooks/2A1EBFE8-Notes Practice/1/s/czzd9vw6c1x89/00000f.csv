@@ -1,0 +1,4 @@
+"0","#rbind() - combine 2 or more tables by rows"
+"0","irisdataclean[species== ""setosa"",c(1,2,5)]->setosa "
+"0","irisdataclean[species== ""virginica"",c(1,2,5)]->virginica "
+"0","rbind(setosa,virginica) "

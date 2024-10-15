@@ -1,0 +1,3 @@
+"0","abline(lm(Lpetal~Lsepal, setosadata)) + title(main=""Iris setosa"")"
+"1","integer(0)
+"

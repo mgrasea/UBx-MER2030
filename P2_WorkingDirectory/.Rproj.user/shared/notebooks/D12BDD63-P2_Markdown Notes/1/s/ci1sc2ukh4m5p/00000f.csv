@@ -1,0 +1,2 @@
+"0","somlit <- read.table(""2022_SOMLIT.txt"", header=TRUE)"
+"0","somlit"

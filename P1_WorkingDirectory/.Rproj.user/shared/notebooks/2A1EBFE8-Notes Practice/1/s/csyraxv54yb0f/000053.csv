@@ -1,0 +1,2 @@
+"0",""
+"0","plot(Lpetal, axes=FALSE, xlab=""observations"", ylab=""petal length"", ylim=c(0,10))"

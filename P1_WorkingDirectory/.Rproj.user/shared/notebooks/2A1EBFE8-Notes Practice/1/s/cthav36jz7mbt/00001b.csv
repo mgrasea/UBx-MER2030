@@ -1,0 +1,43 @@
+"0","setosaorder<-setosadata[order(setosadata$Lpetal),]"
+"0","attach(setosaorder) "
+"2","The following objects are masked _by_ .GlobalEnv:
+
+    Lpetal, Lsepal, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 3):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 5):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 6):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 7):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 8):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 9):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 10):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"0","plot(Lpetal)"

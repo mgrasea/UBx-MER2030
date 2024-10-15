@@ -1,0 +1,1 @@
+"0","irisdata<- read.table(""irisdata.txt"", header=TRUE,row.names=1,dec="","")"

@@ -1,0 +1,43 @@
+"0","irisdataclean <- na.omit(irisdata)"
+"0","dim(irisdataclean)"
+"1","[1]"
+"1"," 139"
+"1","   5"
+"1","
+"
+"0","attach(irisdataclean)"
+"2","The following objects are masked _by_ .GlobalEnv:
+
+    Lpetal, Lsepal, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 4):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 5):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from setosaorder (pos = 6):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 7):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 8):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"
+"2","The following objects are masked from irisdataclean (pos = 9):
+
+    Lpetal, Lsepal, species, Wpetal, Wsepal
+
+"

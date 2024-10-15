@@ -1,0 +1,3 @@
+"0","#create a table containing only petal and sepal length of Iris setosa"
+"0","setosa <- irisdataclean[species==""setosa"",c(""Lpetal"", ""Lsepal"")]"
+"0","setosa"

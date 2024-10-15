@@ -1,0 +1,3 @@
+"0",""
+"0","#by species"
+"0","boxplot(irisdataclean$Lpetal~irisdataclean$species, main=""petal length"", names=c(""I. setosa"",""I. diversicolor"", ""I. virginica""))"

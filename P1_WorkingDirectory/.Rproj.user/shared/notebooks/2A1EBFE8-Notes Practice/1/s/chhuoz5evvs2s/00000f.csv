@@ -1,0 +1,2 @@
+"0","colnames(irisdata)<-c(""Lsepal"", ""Wsepal"", ""Lpetal"", ""Wpetal"", ""species"")"
+"0","head(irisdata)"

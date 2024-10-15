@@ -1,0 +1,5 @@
+"0","#samples with petal length greater than or equal to 6.5"
+"0","#you want to get the samples/rows that is why it is [n,]"
+"0","#cond is just a variable name"
+"0","cond.Lpetal <- irisdataclean[Lpetal>=6.5,]"
+"0","cond.Lpetal"

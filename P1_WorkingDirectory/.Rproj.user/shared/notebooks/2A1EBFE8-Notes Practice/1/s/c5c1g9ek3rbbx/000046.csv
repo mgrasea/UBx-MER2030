@@ -1,0 +1,2 @@
+"0","# make a graph for Iris setosa, then add the 2 other species with different colors"
+"0","plot(Lpetal~Lsepal,setosadata, xlim=c(4,8), ylim=c(0,7))"

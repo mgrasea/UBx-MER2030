@@ -1,0 +1,3 @@
+"0",""
+"0","#with different variables"
+"0","boxplot(Lpetal, Wpetal, Lsepal, Wsepal, main=""Iris boxplot"", names=c(""length petal"", ""width petal"", ""length sepal"", ""widthsepal""))"

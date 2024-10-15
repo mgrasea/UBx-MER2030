@@ -1,0 +1,4 @@
+"0",""
+"0","#regression only on the species setosa"
+"0","setosadata <- irisdataclean[species==""setosa"",]"
+"0","plot(Lpetal~Lsepal, setosadata)"

@@ -1,0 +1,329 @@
+---
+title: "Notes Practice"
+author: "Grace"
+date: "2024-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practicals I
+
+**Note some shortcuts**\
+- Code chunk: Ctrl + Alt + i
+
+```{r packages}
+install.packages("ade4")
+library("ade4")
+```
+
+## Basic functions
+
+```{r as a calculator}
+pi # pi value
+trunc(pi) # return the truncating value
+ceiling(pi) # return the smallest integers not less than the numeric argument
+floor (pi)  # return the largest integers not greater than the numeric argument 
+round(pi,2) # round the value in its first argument to the specified number of decimal places
+```
+
+```{r functions}
+c(1,2,3,4,5) # vector containing 5 integers
+Temp <- c(15,18,23,19,24)
+Temp
+Far <- (Temp*(9/5))+32
+mean(Far)
+```
+
+```{r functions}
+c(1,2,3,4,5) # vector containing 5 integers
+Temp <- c(15,18,23,19,24)
+Temp
+Far <- (Temp*(9/5))+32
+mean(Far)
+```
+
+```{r regular sequences}
+4:19 # generate a vector containing the sequence of all integers between
+
+seq(from=0, to=12, by=2) # regular sequence with beginning, end, step size
+
+rep(c(12,35,48),each=2,time = 2) # repeated sequence, specify the number of times each element is repeated (argument each) and the number of times the sequence is repeated (argument times). 
+
+```
+
+### Matrix
+
+**matrix()** creates an array of data from a set of values or a vector with a given number of columns (argument ncol) and/or a given number of rows (argument nrow), and the order of filling (argument byrow; by column if byrow = FALSE and by line if byrow = TRUE).
+
+```{r matrix}
+mat<-matrix(1:9, ncol=3, byrow=FALSE)
+mat
+
+#set column and row names
+colnames(mat)<- c("a","b","c")
+rownames(mat)<- c("q","r","s")
+mat
+```
+
+```{r extracting values}
+mat[1,2] #extract values
+
+#extract rows or columns
+mat[1,]
+mat[,1]
+
+#extract the 2nd and 3rd row and the 1st and 2nd column
+mat[c(2:3),c(1:2)]
+
+```
+
+```{r manipulating values}
+#replace a value of the matrix
+mat[1,2]<- 35; mat
+
+# remove a value, a row, a column or a subsection of the array
+mat2 <- mat[-1,]; mat2
+
+#make an operation on a row, a column or a subsection of the matrix 
+#calculate the mean of the 3rd column without considering the value of the 2nd row
+mean(mat[-2,3])
+```
+
+### Logical operators
+
+> , \>=, \<, \<=, ==, and !=
+
+```{r extracting values with logical operators}
+
+# extract (1) all values lesser than or equal to 3 and (2) all values strictly lesser than 9 and greater than or equal to 7
+mat[mat<=3]
+mat[mat<9&mat>=7]
+```
+
+```{r replacing values with logical operators}
+#replace by 50 the values lower than or equal to 3
+mat[mat<=3] <- 50; mat
+
+```
+
+### Data frame
+
+```{r matrix of numeric and categorical data}
+data = data.frame(letter=c("a","b","c","d","e","f"), order = seq(from=2, to=12, by=2), type = c("fries","burger","fish", "squid", "kebab", "spaghetti"))
+data
+```
+
+## Getting help with R
+
+```{r}
+help.search("Fisher") 
+help.start()
+
+#search with keywords
+?fisher.test()
+```
+
+## Import and manipulate a data spreadsheet
+
+```{r import}
+irisdata<- read.table("irisdata.txt", header=TRUE,row.names=1,dec=",")
+```
+
+```{r basic functions}
+names(irisdata) #columns
+head(irisdata) #first 6 lines
+dim(irisdata) #number of line, column number
+```
+
+```{r accessing values}
+irisdata[,3] #3rd column
+
+#or using the syntax dataframe_name$variable_name
+irisdata$Petal.Length
+```
+
+### Attach function
+
+The database is attached to the R search path. This means that the database is searched by R when evaluating a variable, so objects in the database can be accessed by simply giving their names.
+
+To detach your object (before setting another) use the function **detach ()**. If 2 files have the same variable names, only variables of the last file will be stored in memory.
+
+```{r attach() }
+attach(irisdata)
+Petal.Length
+Sepal.Width
+```
+
+### Manipulating Data
+
+```{r change name of column or row}
+colnames(irisdata)<-c("Lsepal", "Wsepal", "Lpetal", "Wpetal", "species")
+head(irisdata)
+```
+
+```{r remove all row with missing values}
+irisdataclean <- na.omit(irisdata)
+dim(irisdataclean)
+attach(irisdataclean)
+```
+
+```{r select observations following criteria}
+#samples with petal length greater than or equal to 6.5
+#you want to get the samples/rows that is why it is [n,]
+#cond is just a variable name
+cond.Lpetal <- irisdataclean[Lpetal>=6.5,]
+cond.Lpetal
+```
+
+```{r select observations following criteria}
+#select iris samples with petal length greater than or equal to 6.5 and sepal width lesser than 3  
+#don't forget the ,
+irisdataclean[Lpetal>=6.5&Wsepal<3,]
+```
+
+```{r subsection of an array}
+#create a table containing only petal and sepal length of Iris setosa
+setosa <- irisdataclean[species=="setosa",c("Lpetal", "Lsepal")]
+setosa
+```
+
+### Ordering
+
+```{r order a data table}
+# order() - ascending order 
+irisdataclean[order(Lpetal),]
+# rev() - descending order
+irisdataclean[rev(order(Lpetal)),]
+```
+
+### Combining
+
+```{r combine different data frame}
+#rbind() - combine 2 or more tables by rows
+irisdataclean[species== "setosa",c(1,2,5)]->setosa 
+irisdataclean[species== "virginica",c(1,2,5)]->virginica 
+rbind(setosa,virginica) 
+
+#bind() - combine 2 or more tables by columns
+irisdata[species=="setosa",c(1,2)]->sepal 
+irisdata[species=="setosa",c(3,4)]->petal 
+cbind(sepal,petal) 
+```
+
+### Basic Statistics
+
+**summary()** provides descriptive statistics (min, 1st quartile, median, 3rd quartile, max) for quantitaive variables and the count of each category for qualitative variables.
+
+```{r summary}
+
+#correct the data types first
+irisdataclean$Lsepal <- as.numeric(irisdataclean$Lsepal)
+irisdataclean$Wsepal <- as.numeric(irisdataclean$Wsepal)
+irisdataclean$Lpetal <- as.numeric(irisdataclean$Lpetal)
+irisdataclean$Wpetal <- as.numeric(irisdataclean$Wpetal)
+irisdataclean$species <- as.factor(irisdataclean$species)
+
+summary(irisdataclean)
+```
+
+```{r other basic stat}
+quantile(irisdataclean[,"Lpetal"],0.25)
+median(irisdataclean[,"Lpetal"])
+sd(irisdataclean[,"Lpetal"])
+```
+
+**tapply()** is used to apply an operation (mean, sd…) on a quantitative variable by category of a qualitative variable.
+
+Usage: **tapply (X, INDEX, FUN)**, with X: the quantitative variable; INDEX: the qualitative variable; FUN : the name of the function to make the operation.
+
+```{r example}
+# calculate for each species the mean of the sepal length
+tapply(X=Lsepal,INDEX=species, FUN=mean)
+
+# calculate for each species the mean of the petal length
+tapply(Lpetal, species, mean)
+
+```
+
+## Plots
+
+```{r plot function}
+plot(Lpetal)
+```
+
+argument **main = "text"** is used to add a title\
+symbol **\~** means “function of”.
+
+```{r plot function}
+plot(Lpetal~Lsepal,main="Petal Length") 
+```
+
+### Usage of the plot() function
+
+plot ( X \~ Y, type = " type of plot "\* , main = " overall title " , sub = " sub title ", xlab = " x axis title ", ylab = " y axis title " , xlim = c (min , max ) , ylim = c (min , max ) )
+
+-   Possible types : " p " for points, " l " for lines, " b " for both, " s " for stair steps...
+
+```{r axis}
+plot(Lpetal,axes=FALSE)
+# axes=FALSE means that no axes will be drawn by default
+axis(2) # Add y-axis, 1 is the x axis
+
+plot(Lpetal, axes=FALSE, xlab="observations", ylab="petal length", ylim=c(0,10))
+axis(1,col="grey",font.axis=2)
+axis(2,col="grey",las=2)
+
+```
+
+```{r abline}
+plot(Lpetal~Lsepal)
+abline(lm(Lpetal~Lsepal,irisdataclean),lwd=3)
+#lwd is the line width
+# abline with equation y = b*x+a
+abline(a=0, b=1, col="red", lwd=2)
+
+#regression only on the species setosa
+setosadata <- irisdataclean[species=="setosa",]
+plot(Lpetal~Lsepal, setosadata)
+abline(lm(Lpetal~Lsepal, setosadata)) + title(main="Iris setosa")
+```
+
+```{r points}
+# make a graph for Iris setosa, then add the 2 other species with different colors
+plot(Lpetal~Lsepal,setosadata, xlim=c(4,8), ylim=c(0,7))
+points(Lpetal~Lsepal,irisdataclean[species=="virginica",], col="red")
+points(Lpetal~Lsepal, irisdataclean[species=="versicolor",], col="green")
+
+```
+```{r lines}
+setosaorder<-setosadata[order(setosadata$Lpetal),]
+attach(setosaorder) 
+plot(Lpetal)
+lines(Lpetal,lwd=2) 
+```
+```{r hist}
+hist(setosadata$Lpetal,breaks=5)
+```
+
+```{r hist}
+hist(setosadata$Lpetal,breaks=c(1,1.2,1.4,1.6,1.8,2))
+
+#remove y axis, add title
+hist(setosadata$Lpetal,breaks=5,axes=FALSE,main="petal length",col="grey")
+axis(1,col.axis="grey") 
+
+```
+
+```{r boxplot}
+boxplot(irisdataclean$Lpetal, main="Petal Length")
+
+#with different variables
+boxplot(Lpetal, Wpetal, Lsepal, Wsepal, main="Iris boxplot", names=c("length petal", "width petal", "length sepal", "widthsepal"))
+
+#by species
+boxplot(irisdataclean$Lpetal~irisdataclean$species, main="petal length", names=c("I. setosa","I. diversicolor", "I. virginica"))
+```
+
