@@ -1,0 +1,107 @@
+# Practical Session # 2
+# Description : training in the manipulation of R 
+# Required packages : ggplot2, hrhrthemes
+# Author : B. LUBAC
+# Date : 19/09/2024
+
+library(ggplot2)
+library(hrbrthemes)
+rm(list=ls())
+getwd()
+
+# Ex 1 - Open the data file SOMLIT
+Somlit<-read.table('SOMLIT.txt',header=TRUE);View(Somlit)
+names(Somlit)
+Dim<-dim(Somlit)
+nr<-Dim[1] # number of observations
+nc<-Dim[2] # number of variables
+
+# Ex 2 - Time series analysis of CHLA
+attach(Somlit) 
+CHLA.sum<-summary(CHLA);CHLA.sum
+?hist
+Hist<-hist(CHLA,plot=FALSE)
+{barplot(Hist$counts/sum(Hist$counts),ylab="Relative frequency",
+	names.arg=Hist$mids,xlab=expression(paste("CHLA (",mu,"g/L)")),
+	main="Histogram of the relative frequency of CHLA")}
+# see also the function text
+Date<-as.Date(DATE,"%d/%m/%Y")
+{plot(Date,CHLA,type="b",ylab=expression(paste("CHLA (",mu,"g/L)")),
+	xlab="Date",
+	main="Time series of CHLA")}
+
+# Ex 3 - Analysis of seasonal variability of CHLA
+tapply(CHLA,Season,mean)
+tapply(CHLA,Season,sd)
+boxplot(CHLA~Season,ylab = expression(paste("CHLA (",mu,"g/L)")))
+
+# Ex 4 - Detection of spring anomalies
+CHLA.spring<-Somlit[Season=="spring","CHLA"]
+Date.spring<-Somlit[Season=="spring","DATE"]
+CHLA.stand<-(CHLA.spring-mean(CHLA.spring))/sd(CHLA.spring)
+boxplot(CHLA.stand)
+Date.a<-Date.spring[CHLA.stand>2];Date.a
+
+# Ex 5 - Relationship between CHLA and SPM
+ggplot(Somlit, aes(x=CHLA, y=SPM, color=Season))+
+ 	geom_point(size=4) +
+    	theme_ipsum()
+
+# Ex 6
+# Figure 6.1
+coul <- c("black","red","green","blue")
+fd <- dbinom(c(0:5),5,0.5)
+{plot(fd~c(0:5),xlim=c(0,20),ylim=c(0,.40),type="p",ylab=" ",xlab=" ",pch=15,
+     cex=2,lwd=3,col=coul[1],cex.axis=2)}
+fd <- dbinom(c(0:10),10,0.5)
+{points(fd~c(0:10),xlim=c(0,20),ylim=c(0,.40),type="p",ylab=" ",xlab=" ",pch=16,
+     cex=2,lwd=3,col=coul[2],new=T)}
+fd <- dbinom(c(0:20),20,0.5)
+{points(fd~c(0:20),xlim=c(0,20),ylim=c(0,.40),type="p",ylab=" ",xlab=" ",pch=17,
+     cex=2,lwd=3,col=coul[3],new=T)}
+{legtxt <- c(expression(paste(italic(n)," = 5", sep="")),
+     expression(paste(italic(n)," = 10",sep="")),
+     expression(paste(italic(n)," = 20",sep="")))}
+{legend("topright",legtxt,title=expression(paste(italic(p)," = 0.5",sep="")),
+     pch=c(15,16,17),col=c(coul[1],coul[2],coul[3]),cex=2,bg="white",inset=0.075)}
+# Figure 6.2
+curve(dnorm,from=-4,to=4,ylab="",xlab="",lty=5,lwd=3,add=F,col=coul[1],cex.axis=2)
+curve(dt(x,1),from=-4,to=4,ylab="",xlab="",lty=1,lwd=3,add=T,col=coul[2])
+curve(dt(x,2),from=-4,to=4,ylab="",xlab="",lty=2,lwd=3,add=T,col=coul[3])
+curve(dt(x,5),from=-4,to=4,ylab="",xlab="",lty=4,lwd=3,add=T,col=coul[4])
+{legtxt <- c(expression(paste(italic(n)," = 1", sep="")),
+     expression(paste(italic(n)," = 2",sep="")),
+     expression(paste(italic(n)," = 5",sep="")),
+     expression(paste(italic(N),"(0,1)",sep="")))}
+{legend("topleft",legtxt,lty=c(1,2,4,5),lwd=3,col=c(coul[2],coul[3],coul[4],coul[1]),
+     cex=1.6,bg="white",inset=0.0375)}
+
+# Ex 7
+# 7.1
+# The function qbinom provides the number of successes associated with a given probability
+# Example : qbinom(0.95,200,0.85) = 178 means in a case of a binomial distribution defined by
+# a number of trials (n) equals to 200 and a probability of success for each trial (p) equals
+# to 0.85, there is 95% of chance to have 178 successes.
+# In this exercise, we have to determine the number of trials (n). Because the value of p is 
+# closed to 1, we can expected a value of n close to the number of successes (200). Thus, we 
+# can iterate n from 200 to 250 and checked the result provided by the function qbinom    
+plot(200:250,qbinom(0.05,200:250,0.85)) #x-axis is associated with n and y-axis with the 
+# number of successes
+abline(h=200)
+abline(v=246)
+# RESULT: To obtain at least 200 successes with a probability of 95%, the numbe of trials (n)
+# has to be equal to 246. The student has to purchase 17 (=246/15) packets of seeds to 
+# obtain at least 200 Zostera feet with a probability greater that or equal to 0.95.  
+# 7.2
+# with 100€, the student can purchase 330 (=100/4.5*15) seeds
+fd <- dbinom(c(0:330),330,0.85)
+plot(fd~c(0:330),xlim=c(240,300),ylim=c(0,.08),type="p",ylab=" ",xlab=" ",pch=15,cex=1,lwd=3,col=coul[1],cex.axis=2)
+# This figure provides the PDF (p(X=x)). For example, there is 6.1% of chance to have 282 feet.
+plot(cumsum(fd)~c(0:330),xlim=c(240,300),ylim=c(0,1),type="p",ylab=" ",xlab=" ",pch=15,cex=1,lwd=3,col=coul[1],cex.axis=2)
+# This figure provides the cumulative distribution function (F(X=x)=P(X<=x)). For example, there is 55.4%
+# of chance that the student obtain less than 282 feet of Zostera.
+
+
+
+
+

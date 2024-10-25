@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r packages}
 library("ggplot2")
 library("hrbrthemes")
+library ("dplyr")
 ```
 
 ## Exercise 1: Open data file
@@ -36,7 +37,9 @@ variables
 
 ```{r number of observations}
 observations <- dim(somlit)
-observations[1]
+observations
+observations <- observations[1]
+print(paste("number of observations is", observations))
 ```
 
 ## Exercise 2: time series analysis of chlorophyll-a concentration CHLA
@@ -52,11 +55,12 @@ sd(CHLA)
 
 -   Generate the histogram of the relative frequency of CHLA (see Fig1) \*\* The relative frequency is the count over the total number of count
 
-```{r histogram}
+```{r histogram Base R / Lubac's solution}
 hist(CHLA)
 #this is not the histogram we want. needs to be relative frequency
+
 Hist <- hist (CHLA, plot =FALSE)
-Hist #see the data within the histogram. ir shows the count and breaks(x-axis) that we need to compute relative frequency
+Hist #see the data within the histogram. it shows the count and breaks(x-axis) that we need to compute relative frequency
 
 # relative frequencies of CHLA is the count divided by the sum of the counts, this is the y value
 (barplot(Hist$counts/sum(Hist$counts), 
@@ -65,71 +69,286 @@ Hist #see the data within the histogram. ir shows the count and breaks(x-axis) t
   main="Histogram of the relative frequency of CHLA"))
 ```
 
-* Generate the time series of CHLA (see Fig2)  
-```{r time series}
+```{r ggplot solution}
+ggplot(data = somlit, aes(x = CHLA)) +
+  geom_histogram(aes(y = ..count../sum(..count..)), 
+                 breaks =seq(0, 9, by = 1), fill = "gray", color = "black") +
+  labs(x = expression(paste("CHLA (", mu, "g/L)")),
+       y = "Relative frequency",
+       title = "Histogram of the relative frequency of CHLA") +
+  theme_minimal()
+```
 
+-   Generate the time series of CHLA (see Fig2)
+
+```{r time series Base R / Lubac's solution}
 #fix the date and time data type and formatting
-date <- as.Date(DATE, format = "%d/%m/%Y")
+somlit$DATE <- as.Date(somlit$DATE, format = "%d/%m/%Y")
 #now the Date is no longer a character
 
-#alternative
-plot(date, CHLA, type = "b",
+plot(somlit$DATE, somlit$CHLA, type = "b",
      ylab = expression(paste("CHLA (", mu, "g/L)")),
      xlab = "Date",
-     main = "Time Series of CHLA")
+     main = "Time Series of CHLA",
+     xaxt = "n")  # Suppress the default x-axis
+
+#to have the same x labels as Lubac's solution
+# Customize the x-axis with specific breaks
+axis.Date(1, at = seq(min(date), max(date), by = "2 years"), format = "%Y")
 ```
 
-## Other exercise
-###Exercise 6
-Figure 6.1
-```{r binomial distribution}
-coul <- c("black", "red","green","blue")
+```{r ggplot solution}
+# Generate the ggplot time series
+ggplot(somlit, aes(x = DATE, y = CHLA)) +
+  geom_line() + # Adds lines connecting the points
+  geom_point() + # Adds points on the graph
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") + # Customizes the x-axis to show years at 2-year intervals
+  labs(x = "Date", y = expression(paste("CHLA (", mu, "g/L)")), 
+       title = "Time Series of CHLA") + 
+  theme_minimal() + # Apply a minimal theme for clean styling
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14))
+```
+
+## Exercise 3: Analysis of seasonal variability of CHLA
+
+-   Compute the mean and the standard deviation of CHLA per season (Spring, Summer, Autumn, Winter)
+
+-   Display the basic descriptive statistics of CHLA per season
+
+The **tapply()** function in R is used to apply a function (like mean, sum, or sd) to subsets of a vector, grouped by a factor or list of factors. It's a powerful tool for performing group-wise operations on data, similar to a "split-apply-combine" operation.
+
+```{r Base R / Lubac's solution}
+tapply(CHLA,Season,mean) # Calculate the mean CHLA value for each season
+tapply(CHLA,Season,sd) # Calculate the standard deviation of CHLA for each season
+
+#visualize the mean and sd using a boxplot
+boxplot(CHLA~Season,ylab = expression(paste("CHLA (",mu,"g/L)")))
+
+```
+
+```{r ggplot solution}
+#added some color for better visualization of the mean
+ggplot(somlit, aes(x = Season, y=CHLA)) +
+  geom_boxplot(fill = "lightblue")+
+  stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "darkblue") +  # Add mean as a dark blue point
+  labs(x ="Season", y= expression(paste("CHLA (", mu, "g/L"))) +
+  theme_minimal()  # Apply minimal theme for a clean plot
+
+```
+
+### Exercise 4: Detection of spring anomalies
+
+-   Standardize CHLA variable (subtract the mean and divide by the standard deviation)
+-   Find the date associated with CHLA values higher than 2.
+
+```{r Base R / Lubac's solution}
+#we are only interested in spring
+CHLA.spring<-somlit[Season=="spring","CHLA"]
+Date.spring<-somlit[Season=="spring","DATE"]
+
+#formula for standardizing a variable is (variable - mean)/sd
+CHLA.stand<-(CHLA.spring-mean(CHLA.spring))/sd(CHLA.spring)
+
+#plot the standardized
+boxplot(CHLA.stand)
+
+#these are the dates where CHLA > 2
+Date.anomalies <-Date.spring[CHLA.stand>2]
+Date.anomalies
+```
+
+```{r dplry solution}
+
+# Filter the dataset to keep only Spring data and display DATE and CHLA columns
+spring_data <- somlit %>%
+  filter(Season == "spring") %>%  # Filter for Spring season
+  select(DATE, CHLA)  # Select only DATE and CHLA columns
+spring_data
+
+# Standardize the CHLA variable
+mean_chla <- mean(spring_data$CHLA) # Compute the mean of CHLA
+sd_chla <- sd(spring_data$CHLA)  # Compute the standard deviation of CHLA
+
+# Create a new column for standardized CHLA
+spring_data <- spring_data %>%
+  mutate(CHLA_standardized = (spring_data$CHLA - mean_chla) / sd_chla)
+
+# Plot the standardized CHLA
+ggplot(spring_data, aes(y=CHLA)) +
+  geom_boxplot()+
+  labs(y= "Standardized CHLA") +
+  theme_minimal() 
+
+# Find dates associated with standardized CHLA > 2
+anomalies <- spring_data %>%
+  filter(CHLA_standardized > 2) %>%
+  select(DATE, CHLA, CHLA_standardized)
+
+# Display the results
+anomalies
+
+```
+
+## Exercise 5: Relationship between CHLA and SPM
+
+-   Display the relationship between CHLA and SPM (see the website : <https://www.r-graph-gallery.com/>)
+
+```{r Lubac's solution using ggplot}
+
+ggplot(somlit, aes(x=CHLA, y=SPM, color=Season))+
+ 	geom_point(size=4) +
+    	theme_ipsum()
+```
+
+## Exercise 6: Reproduce the same plots
+
+### dbinom() function
+
+```         
+-   plot(): Plots the binomial probabilities (fd) for n = 5.
+-   fd \~ c(0:5): Y-values are fd (probabilities), and X-values are the number of successes (0 to 5).
+-   xlim = c(0, 20): Sets the limits for the x-axis (from 0 to 20).
+-   ylim = c(0, 0.40): Sets the limits for the y-axis (from 0 to 0.40).
+-   pch = 15: Sets the plotting symbol (square) for the points.
+-   col = coul[1]: Sets the color for the points (black).
+-   cex = 2: Increases the size of the points.
+-   lwd = 3: Increases the line width (applies to the points' border).
+-   cex.axis = 2: Increases the size of axis tick labels.
+```
+
+This code calculates and plots the binomial distributions for different sample sizes (n = 5, n = 10, and n = 20), all with a success probability of p = 0.5.
+
+```{r binomial distribution / Lubac's solution}
+# Define a vector of colors for the different plots
+coul <- c("black", "red", "green", "blue")
+
+# Plot the binomial distribution for n = 5, p = 0.5
 fd <- dbinom(c(0:5), 5, 0.5)
-{plot(fd~c(0:5), xlim=c(0,20), ylim=c(0,.40), type="p", ylab=" ", xlab=" ", pch=15,
-     cex=2, lwd=3, col=coul[1], cex.axis=2)}
+plot(fd ~ c(0:5), xlim = c(0, 20), ylim = c(0, 0.40), type = "p", ylab = " ", xlab = " ", pch = 15, cex = 2, lwd = 3, col = coul[1], cex.axis = 2)
 
-fd <- dbinom(c(0:10), 10, 0.50)
-{points(fd~c(0:10), xlim=c(0,10), ylim=c(0,.40), type="p", ylab=" ", xlab=" ", pch=16,
-       cex=2, lwd=3, col=coul[2], new=TRUE)}
+# Add the binomial distribution for n = 10, p = 0.5
+fd <- dbinom(c(0:10), 10, 0.5)
+points(fd ~ c(0:10), type = "p", pch = 16, cex = 2, lwd = 3, col = coul[2])
 
-fd <- dbinom(c(0:20), 20, 0.50)
-{points(fd~c(0:20), xlim=c(0,20), ylim=c(0,.40), type="p", ylab=" ", xlab=" ", pch=17,
-       cex=2, lwd=3, col=coul[3], new=TRUE)}
+# Add the binomial distribution for n = 20, p = 0.5
+fd <- dbinom(c(0:20), 20, 0.5)
+points(fd ~ c(0:20), type = "p", pch = 17, cex = 2, lwd = 3, col = coul[3])
 
-{legtxt <- c(expression(paste(italic(n), " = 5", sep="")),
-            expression(paste(italic(n), " = 10", sep="")),
-            expression(paste(italic(n), " = 20", sep="")))}
+# Create the legend text
+legtxt <- c(expression(paste(italic(n), " = 5", sep = "")),
+            expression(paste(italic(n), " = 10", sep = "")),
+            expression(paste(italic(n), " = 20", sep = "")))
 
-{legend("topright", legtxt, title=expression(paste(italic(p), " = 0.5", sep="")),
-       pch=c(15,16,17), col=c(coul[1], coul[2], coul[3]), cex=2, bg="white", inset=0.075)}
+# Add the legend to the plot
+legend("topright", legtxt, title = expression(paste(italic(p), " = 0.5", sep = "")),
+       pch = c(15, 16, 17), col = c(coul[1], coul[2], coul[3]), cex = 2, bg = "white", inset = 0.050) #inset adds some space between the legend and the plot's edge
+
 ```
 
-###Exercise 7
-Packets of seeds of Zostera are commercially available. In a packet there are 15 seeds and each seed gives at most a foot of Zostera. Seagrasses have a probability of germination equal 
-to 0.85. 
+**Other notes**
 
-6.1. What is the minimum number of packets that a PhD student must purchase to obtain at least 200 Zostera foot with a probability greater than or equal to 0.95? 
-* Need at least 246 Zostera seeds
-* Need at least 17 packets
+-   type = "p": p stands for points. When you set type = "p", R will plot points at the specified (x, y) coordinates.
 
-6.2. The Phd student has 100 euros to purchase the seeds. A packet is sold 4.50 euros. How many feet should he expect to get?
-* 
+    -   type = "l": lines. This plots a line connecting the data points.
+    -   type = "b": both. This plots both points and lines connecting them.
+    -   type = "o": overplotted. This is similar to "b", but the points are plotted over the lines.
+    -   type = "h": histogram-like. This creates vertical lines from the x-axis to the points (often used in bar plots).
+    -   type = "n": no plotting. This sets up the axes and plotting area but doesn't plot anything. Useful when you want to add elements manually later, like using points() or lines().
 
-Given:
+### dnorm() and dt() function
+
+```         
+-   curve(dnorm, ...): The curve() function is used to plot a normal distribution curve (standard normal, N(0,1))
+
+-   dnorm: The probability density function (PDF) of the standard normal distribution.
+
+-   ylab = "" and xlab = "": No labels for the y-axis or x-axis.
+
+-   lty = 5: Specifies the line type (dashed line) for this curve.
+
+-   lwd = 3: Specifies the line width (thicker line).
+
+-   add = FALSE: This creates a new plot (since it's the first curve).
+
+-   col = coul[1]: Uses the first color (black) from the coul vector.
+
+-   cex.axis = 2: Increases the size of the axis text.
+```
+
+This code plots the standard normal distribution (N(0,1)) and Student's t-distributions with degrees of freedom (n = 1, n = 2, n = 5). The curve() function is used to plot the probability density functions (PDFs) of these distributions.
+
+```{r Lubac's solution}
+# Plot the normal distribution curve (N(0,1))
+curve(dnorm,from=-4,to=4,ylab="",xlab="",lty=5,lwd=3,add=F,col=coul[1],cex.axis=2)
+
+# Add the Student's t-distribution curve with 1 degree of freedom
+# dt(x, 1): The t-distribution with 1 degree of freedom.
+# lty = 1: Solid line type for this curve.
+curve(dt(x,1),from=-4,to=4,ylab="",xlab="",lty=1,lwd=3,add=T,col=coul[2])
+
+# Student's t-distribution curve with 2 degrees of freedom
+# lty = 2: Dashed line for this curve.
+curve(dt(x,2),from=-4,to=4,ylab="",xlab="",lty=2,lwd=3,add=T,col=coul[3])
+
+# Student's t-distribution curve with 5 degrees of freedom
+# lty = 4: Dash-dot line type for this curve.
+curve(dt(x,5),from=-4,to=4,ylab="",xlab="",lty=4,lwd=3,add=T,col=coul[4])
+
+# Create the legend text with labels for different degrees of freedom and the normal distribution
+{legtxt <- c(expression(paste(italic(n)," = 1", sep="")),
+     expression(paste(italic(n)," = 2",sep="")),
+     expression(paste(italic(n)," = 5",sep="")),
+     expression(paste(italic(N),"(0,1)",sep="")))}
+
+# Add the legend to the plot
+{legend("topleft",legtxt,lty=c(1,2,4,5),lwd=3,col=c(coul[2],coul[3],coul[4],coul[1]), cex=1.6,bg="white",inset=0.0225)}
+```
+
+## Exercise 7
+
+Packets of seeds of Zostera are commercially available. In a packet there are 15 seeds and each seed gives at most a foot of Zostera. Seagrasses have a probability of germination equal to 0.85.
+
+**6.1.** What is the minimum number of packets that a PhD student must purchase to obtain at least 200 Zostera foot with a probability greater than or equal to 0.95?
+
+**6.2.** The Phd student has 100 euros to purchase the seeds. A packet is sold 4.50 euros. How many feet should he expect to get? \*
+
+**Given:**
+
 p=0.85
-P(X>=200) =0.95
-P(X<200)=1-0.95=0.05
-F(X=x)=P(X<x)=0.05
 
+P(X\>=200) =0.95
+
+P(X\<200)=1-0.95=0.05
+
+F(X=x)=P(X\<x)=0.05
+
+The function **qbinom** provides the number of successes associated with a given probability
+
+-   Example : qbinom(0.95,200,0.85) = 178 means in a case of a binomial distribution defined by a number of trials (n) equals to 200 and a probability of success for each trial (p) equals to 0.85, there is 95% of chance to have 178 successes. In this exercise, we have to determine the number of trials (n). Because the value of p is closed to 1, we can expected a value of n close to the number of successes (200). Thus, we can iterate n from 200 to 250 and checked the result provided by the function qbinom
 
 ```{r exercise 7}
-?dbinom
-plot(200:250,qbinom(0.05,200:250,0.85))
-#add a line to plot
-abline(h=200)
-abline(v=246)
-246/15
-100/4.5
-22*15
-plot(cumsum(fd~c(0:330)))
+
+## Plot the binomial quantile function for different numbers of seeds (n = 200 to 250)
+plot(200:250,qbinom(0.05,200:250,0.85)) #x-axis is associated with n and y-axis with the 
+
+# number of successes
+abline(h=200) ## Add a horizontal line at 200 germinated seeds
+abline(v=246) ## # Add a vertical line to show n = 246 seeds
+
+
+fd <- dbinom(c(0:330),330,0.85)
+# Plot the probability density function (PDF) for 330 seeds
+plot(fd~c(0:330),xlim=c(240,300),ylim=c(0,.08),type="p",ylab=" ",xlab=" ",pch=15,cex=1,lwd=3,col=coul[1],cex.axis=2)
+# This figure provides the PDF (p(X=x)). For example, there is 6.1% of chance to have 282 feet.
+
+# Plot the cumulative distribution function (CDF) for 330 seeds
+plot(cumsum(fd)~c(0:330),xlim=c(240,300),ylim=c(0,1),type="p",ylab=" ",xlab=" ",pch=15,cex=1,lwd=3,col=coul[1],cex.axis=2)
+# This figure provides the cumulative distribution function (F(X=x)=P(X<=x)). For example, there is 55.4% of chance that the student obtain less than 282 feet of Zostera.
+
 ```
+
+**Answer:**
+
+-   To obtain at least 200 successes with a probability of 95%, the number of trials (n) has to be equal to 246.
+-   The student has to purchase 17 (=246/15) packets of seeds to obtain at least 200 Zostera feet with a probability greater that or equal to 0.95.
+-   with 100€, the student can purchase 330 (=100/4.5\*15) seeds
